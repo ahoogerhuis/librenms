@@ -1,5 +1,31 @@
 <?php
 
+use LibreNMS\Util\Oid;
+
+/*
+ * reboot-required state sensor (prototype)
+ * requires snmp extend agent script from librenms-agent
+ */
+$snmpData = SnmpQuery::cache()->hideMib()->walk('NET-SNMP-EXTEND-MIB::nsExtendOutLine."reboot-required"')->table(3);
+if (! empty($snmpData)) {
+    $snmpData = array_shift($snmpData); // drop [reboot-required]
+
+    if (! empty($snmpData[1])) {
+        $oid = Oid::of('NET-SNMP-EXTEND-MIB::nsExtendOutLine."reboot-required".1')->toNumeric();
+        $value = current($snmpData[1]);
+        $state_name = 'linuxRebootRequired';
+        $descr = 'Reboot Required';
+        $states = [
+            ['value' => 0, 'generic' => 0, 'descr' => 'No reboot required'],
+            ['value' => 1, 'generic' => 2, 'descr' => 'Reboot required'],
+            ['value' => 2, 'generic' => 3, 'descr' => 'Check failed'],
+        ];
+
+        create_state_index($state_name, $states);
+        discover_sensor(null, 'state', $device, $oid, $state_name, $state_name, $descr, '1', '1', null, null, null, null, $value, 'snmp', null, null, null, 'reboot-required');
+    }
+}
+
 /*
  * codec states for raspberry pi
  * requires snmp extend agent script from librenms-agent
