@@ -112,6 +112,11 @@ class QueryBuilderFluentParser extends QueryBuilderParser
                 }
                 Log::error('Could not parse in values, use comma or space delimiters');
                 break;
+            case 'in_prefix':
+            case 'not_in_prefix':
+                $sql = $this->buildPrefixSql($rule['field'], $rule['value'], $op === 'not_in_prefix');
+
+                return $query->whereRaw($sql, [], $condition);
             default:
                 Log::error('Unhandled QueryBuilderFluentParser operation: ' . $op);
         }
