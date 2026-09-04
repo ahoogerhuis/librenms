@@ -3,8 +3,16 @@
 $component = new LibreNMS\Component();
 $options = [];
 $options['filter']['ignore'] = ['=', 0];
-$options['type'] = 'ntp';
 $components = $component->getComponents(null, $options);
+// See includes/html/pages/device/apps/ntp.inc.php's own comment for why
+// this is a post-fetch filter widened to a second real type
+// ('ntp-client-winrm', alexh/librenms-fork) rather than a query-level
+// change -- Component::getComponents()'s filter mechanism has no IN/
+// array-value support.
+$components = array_map(
+    fn ($comp) => array_filter($comp, fn ($c) => in_array($c['type'] ?? null, ['ntp', 'ntp-client-winrm'], true)),
+    $components
+);
 
 $first = ($vars['current'] - 1) * $vars['rowCount']; // Which record do we start on.
 $last = $first + $vars['rowCount']; // Which record do we end on.
@@ -50,7 +58,12 @@ foreach ($components as $devid => $comp) {
 
             // If this record is in the range we want.
             if ($showAll || (($count > $first) && ($count <= $last))) {
-                $device_link = generate_device_link($device, null, ['tab' => 'apps', 'app' => 'ntp']);
+                // $array['type'] (not the literal 'ntp') -- a peer row can
+                // now genuinely be either real type ('ntp' or
+                // 'ntp-client-winrm', alexh/librenms-fork), and the wrong
+                // app_type here would link to a device's own Apps tab for
+                // an app_type it doesn't actually have.
+                $device_link = generate_device_link($device, null, ['tab' => 'apps', 'app' => $array['type']]);
 
                 $graph_array = [];
                 $graph_array['device'] = $device['device_id'];

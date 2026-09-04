@@ -58,6 +58,15 @@ class StringHelpers
             'nfs-v3-stats' => 'NFS v3 Stats',
             'ntp' => 'NTP',
             'ntp-client' => 'NTP Client',
+            // Distinct from 'ntp-client' on purpose (2026-08-12): both real
+            // apps are genuinely "NTP Client" by concept, but the global,
+            // cross-device Apps menu (includes/html/pages/apps.inc.php)
+            // lists every app_type's group side by side regardless of which
+            // devices back them -- an identical label there is confusing in
+            // a way the earlier "these two can never appear on the same
+            // device page" reasoning didn't cover, since that was scoped to
+            // one device's own page, not this global listing.
+            'ntp-client-winrm' => 'NTP Client (WinRM)',
             'ntp-server' => 'NTP Server',
             'opengridscheduler' => 'Open Grid Scheduler',
             'opensearch' => 'Elasticsearch\Opensearch',

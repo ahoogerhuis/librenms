@@ -23,7 +23,14 @@
                 </a>
                 @endcan
 
-                @if(LibrenmsConfig::get('enable_clear_discovery') && ! $device->snmp_disable)
+                {{-- snmp_disable used to also gate this button; removed 2026-08-12 --
+                     DeviceController::rediscover() has no SNMP dependency at all (it
+                     only nulls last_discovered, an inert "due for discovery" marker
+                     consumed identically by every module's own discover(), SNMP or
+                     not), so a device discoverable by a non-SNMP module (e.g. a
+                     WinRM-based Module) could never trigger it. See
+                     docs/WINRM_REDISCOVER_BUTTON_FIX.md. --}}
+                @if(LibrenmsConfig::get('enable_clear_discovery'))
                     <button type="submit" id="rediscover" data-device_id="{{ $device->device_id }}"
                             class="btn btn-primary" name="rediscover" title="{{ __('device.edit.rediscover_title') }}">
                         <i class="fa fa-retweet"></i> {{ __('device.edit.rediscover') }}

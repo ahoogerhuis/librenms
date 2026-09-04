@@ -274,7 +274,12 @@ class Graph
 
     public static function getOverviewGraphsForDevice(Device $device): array
     {
-        if ($device->snmp_disable) {
+        // snmp_disable means "no SNMP", not "no data" -- a device with
+        // snmp_disable set can still have real Processor/Mempool/Storage
+        // rows populated by a non-SNMP poller (e.g. the WinRM module).
+        // Only fall back to the ping-only sparkline when there's genuinely
+        // no usage data to show, regardless of how it got collected.
+        if ($device->snmp_disable && ! self::deviceHasUsageData($device)) {
             return Arr::wrap(LibrenmsConfig::getOsSetting('ping', 'over'));
         }
 
@@ -285,6 +290,11 @@ class Graph
         $os_group = LibrenmsConfig::getOsSetting($device->os, 'group');
 
         return Arr::wrap(LibrenmsConfig::get("os_group.$os_group.over", LibrenmsConfig::get('os.default.over')));
+    }
+
+    private static function deviceHasUsageData(Device $device): bool
+    {
+        return $device->processors()->exists() || $device->mempools()->exists() || $device->storage()->exists();
     }
 
     /**

@@ -1825,6 +1825,9 @@ return [
             'nac' => [
                 'description' => 'NAC',
             ],
+            'winrm-poller' => [
+                'description' => 'WinRM Poller',
+            ],
             'netscaler-vsvr' => [
                 'description' => 'Netscaler VSVR',
             ],

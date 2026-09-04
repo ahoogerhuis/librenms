@@ -108,6 +108,15 @@ $graphs['ntp-client'] = [
     'stats',
     'freq',
 ];
+// alexh/librenms-fork -- WinRM ntp-sync-status check (LibreNMS/Modules/
+// WinrmPoller.php). One representative graph, matching os-updates'
+// own single-'packages'-entry convention -- stratum is the one value
+// that answers "is this device's NTP sync currently healthy" at a
+// glance (offset/delay/dispersion are supporting detail, already on
+// the device's own Apps tab).
+$graphs['ntp-client-winrm'] = [
+    'stratum',
+];
 $graphs['ntp-server'] = [
     'stats',
     'freq',

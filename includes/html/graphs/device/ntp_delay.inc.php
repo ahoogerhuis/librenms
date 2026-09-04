@@ -13,12 +13,15 @@
  */
 
 $component = new LibreNMS\Component();
-$options = [];
-$options['filter']['type'] = ['=', 'ntp'];
-$components = $component->getComponents($device['device_id'], $options);
+$components = $component->getComponents($device['device_id']);
 
 // We only care about our device id.
 $components = $components[$device['device_id']];
+// See includes/html/pages/device/apps/ntp.inc.php's own comment for
+// why this is a post-fetch filter widened to a second real type
+// ('ntp-client-winrm', alexh/librenms-fork) rather than a duplicated
+// file or a query-level IN clause.
+$components = array_filter($components, fn ($c) => in_array($c['type'] ?? null, ['ntp', 'ntp-client-winrm'], true));
 
 include 'includes/html/graphs/common.inc.php';
 $graph_params->scale_min = 0;
@@ -29,7 +32,11 @@ $rrd_additions = '';
 
 $count = 0;
 foreach ($components as $array) {
-    $rrd_filename = Rrd::name($device['hostname'], ['ntp', $array['peer']]);
+    // RRD name prefix follows the component's own real type -- 'ntp' for
+    // the native-MIB-based mechanism, 'ntp-client-winrm' for the WinRM
+    // check -- not hardcoded, so this matches whichever mechanism
+    // actually wrote the RRD file for that specific component.
+    $rrd_filename = Rrd::name($device['hostname'], [$array['type'], $array['peer']]);
 
     if (Rrd::checkRrdExists($rrd_filename)) {
         // Grab a color from the array.
